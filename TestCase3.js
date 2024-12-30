@@ -1,5 +1,7 @@
 const { Builder } = require('selenium-webdriver');
 const LoginPage = require('./WebComponent/LoginPage');
+const DashboardPage = require('./WebComponent/DashboardPage');
+const CartPage = require('./WebComponent/CartPage');
 const assert = require('assert');
 const fs = require('fs');
 
@@ -8,7 +10,7 @@ if(!fs.existsSync(screenshotDir)){
     fs.mkdirSync(screenshotDir, {require: true});
 }
 
-describe('TestCase 2', function () {
+describe('TestCase 3', function () {
     this.timeout(400000);
     let driver;
 
@@ -18,14 +20,16 @@ describe('TestCase 2', function () {
 
     beforeEach(async function (){
         const loginPage = new LoginPage(driver);
+        const dashboardPage = new DashboardPage(driver);
         await loginPage.navigate();
-        await loginPage.login('haha', 'hihi');
+        await loginPage.login('standard_user', 'secret_sauce');
+        await dashboardPage.addToCart();
     });
 
-    it('Error message appears for invalid credentials', async function (){
-        const loginPagePage = new LoginPage(driver);
-        const errorMessage = await loginPagePage.getErrorMessage();
-        assert.strictEqual(errorMessage, 'Epic sadface: Username and password do not match any user in this service', 'Expected error message does not match')
+    it('Add item to cart succesfully and verify cart', async function (){
+        const cartPage = new CartPage(driver);
+        const item = await cartPage.itemOnCart();
+        assert.strictEqual(item, 'Sauce Labs Backpack', 'Expected item name to be Sauce Labs Backpack')
     });
 
     afterEach(async function () {
@@ -33,7 +37,7 @@ describe('TestCase 2', function () {
         const filepath = `${screenshotDir}${this.currentTest.title.replace(/\s+/g, '_' )}_${Date.now()}.png`;
         fs.writeFileSync(filepath, screenshot, 'base64');
     })
-    
+
     after(async function (){
         await driver.quit();
     });
